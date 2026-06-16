@@ -84,7 +84,7 @@ export default function Home() {
     }
 
     setSelectedFile(file);
-    setUploadName(file.name);
+    setUploadName(stripFileExtension(file.name));
   }
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -104,18 +104,13 @@ export default function Home() {
       return;
     }
 
-    const objectName = normalizeObjectName(uploadName);
+    const objectBaseName = normalizeObjectName(uploadName);
+    const objectName = buildObjectNameWithOriginalExtension(
+      objectBaseName,
+      selectedFile.name,
+    );
     if (!objectName) {
       toast.error("请填写上传文件名。");
-      return;
-    }
-
-    const extensionError = validateExtensionUnchanged(
-      selectedFile.name,
-      objectName,
-    );
-    if (extensionError) {
-      toast.error(extensionError);
       return;
     }
 
@@ -179,6 +174,9 @@ export default function Home() {
   }
 
   const isDark = resolvedTheme === "dark";
+  const selectedExtension = selectedFile
+    ? getFileExtension(selectedFile.name)
+    : "";
 
   return (
     <main className="min-h-svh bg-background">
@@ -229,24 +227,9 @@ export default function Home() {
             <CardDescription>
               选择文件，填写上传文件名，然后浏览器直传到对象存储。
             </CardDescription>
-            <CardAction>
-              <Button
-                type="button"
-                size="sm"
-                disabled={!selectedFile || busy || !configReady}
-                onClick={() => void uploadFile()}
-              >
-                {busy ? (
-                  <Loader2Icon data-icon="inline-start" className="animate-spin" />
-                ) : (
-                  <UploadCloudIcon data-icon="inline-start" />
-                )}
-                上传
-              </Button>
-            </CardAction>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
+            <div className="flex flex-col gap-4">
               <Field>
                 <FieldLabel>上传文件</FieldLabel>
                 <input
@@ -286,12 +269,48 @@ export default function Home() {
 
               <Field>
                 <FieldLabel>上传文件名</FieldLabel>
-                <Input
-                  value={uploadName}
-                  onChange={(event) => setUploadName(event.target.value)}
-                  placeholder="example.zip"
-                />
+                <div className="flex min-w-0">
+                  <Input
+                    value={uploadName}
+                    disabled={!selectedFile || busy}
+                    className="rounded-r-none"
+                    onChange={(event) =>
+                      setUploadName(
+                        stripLockedExtension(
+                          event.target.value,
+                          selectedExtension,
+                        ),
+                      )
+                    }
+                    placeholder="example"
+                  />
+                  <span className="flex h-8 max-w-40 shrink-0 items-center rounded-r-lg border border-l-0 border-input bg-muted px-2.5 text-sm text-muted-foreground">
+                    <span className="truncate">
+                      {selectedFile
+                        ? selectedExtension || "无后缀"
+                        : ".后缀"}
+                    </span>
+                  </span>
+                </div>
               </Field>
+
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  disabled={!selectedFile || busy || !configReady}
+                  onClick={() => void uploadFile()}
+                >
+                  {busy ? (
+                    <Loader2Icon
+                      data-icon="inline-start"
+                      className="animate-spin"
+                    />
+                  ) : (
+                    <UploadCloudIcon data-icon="inline-start" />
+                  )}
+                  上传
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -452,17 +471,15 @@ function normalizeObjectName(value: string) {
     .join("/");
 }
 
-function validateExtensionUnchanged(originalName: string, objectName: string) {
-  const originalExtension = getFileExtension(originalName);
-  const objectExtension = getFileExtension(objectName);
-
-  if (originalExtension === objectExtension) {
-    return undefined;
+function buildObjectNameWithOriginalExtension(
+  baseName: string,
+  originalName: string,
+) {
+  if (!baseName) {
+    return "";
   }
 
-  return originalExtension
-    ? `文件后缀必须保持为 ${originalExtension}。`
-    : "原文件没有后缀，上传文件名也不能添加后缀。";
+  return `${baseName}${getFileExtension(originalName)}`;
 }
 
 function getFileExtension(value: string) {
@@ -473,6 +490,24 @@ function getFileExtension(value: string) {
   }
 
   return fileName.slice(extensionStart);
+}
+
+function stripFileExtension(value: string) {
+  const fileName = value.replaceAll("\\", "/").split("/").at(-1) ?? "";
+  const extension = getFileExtension(fileName);
+  if (!extension) {
+    return fileName;
+  }
+
+  return fileName.slice(0, -extension.length);
+}
+
+function stripLockedExtension(value: string, extension: string) {
+  if (!extension || !value.endsWith(extension)) {
+    return value;
+  }
+
+  return value.slice(0, -extension.length);
 }
 
 function formatBytes(value: number) {
