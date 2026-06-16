@@ -1,0 +1,26 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# Next.js
+.next
+out
+next-env.d.ts
+
+# production
+dist
+build
+
+# local env files
+.env
+.env*.local
+
+# logs
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# local QA artifacts
+.playwright-mcp
+s3-uploader-home.png
