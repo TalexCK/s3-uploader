@@ -288,7 +288,7 @@ export default function Home() {
                     <span className="truncate">
                       {selectedFile
                         ? selectedExtension || "无后缀"
-                        : ".后缀"}
+                        : ".png"}
                     </span>
                   </span>
                 </div>
