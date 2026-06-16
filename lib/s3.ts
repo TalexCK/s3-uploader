@@ -84,7 +84,32 @@ function buildObjectKey(basePrefix: string, requestPrefix: string, fileName: str
     throw new Error("文件名不能为空");
   }
 
-  return `${basePrefix}${requestPrefix}${safeName}`;
+  return `${basePrefix}${requestPrefix}${appendRandomSuffix(safeName)}`;
+}
+
+function appendRandomSuffix(filePath: string) {
+  const parts = filePath.split("/");
+  const fileName = parts.at(-1);
+  if (!fileName) {
+    throw new Error("文件名不能为空");
+  }
+
+  parts[parts.length - 1] = suffixFileName(fileName, createRandomSuffix());
+  return parts.join("/");
+}
+
+function suffixFileName(fileName: string, suffix: string) {
+  const extensionStart = fileName.lastIndexOf(".");
+  const hasExtension = extensionStart > 0 && extensionStart < fileName.length - 1;
+  if (!hasExtension) {
+    return `${fileName}-${suffix}`;
+  }
+
+  return `${fileName.slice(0, extensionStart)}-${suffix}${fileName.slice(extensionStart)}`;
+}
+
+function createRandomSuffix() {
+  return crypto.randomUUID().replaceAll("-", "");
 }
 
 function sanitizePath(value: string) {

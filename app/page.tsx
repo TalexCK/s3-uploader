@@ -110,8 +110,12 @@ export default function Home() {
       return;
     }
 
-    if (items.some((item) => item.objectKey === objectName)) {
-      toast.error("任务队列里已经有同名文件，已拒绝重复上传。");
+    const extensionError = validateExtensionUnchanged(
+      selectedFile.name,
+      objectName,
+    );
+    if (extensionError) {
+      toast.error(extensionError);
       return;
     }
 
@@ -148,7 +152,7 @@ export default function Home() {
         throw new Error("预签名响应为空");
       }
 
-      updateItem(id, { status: "uploading" });
+      updateItem(id, { objectKey: upload.objectKey, status: "uploading" });
       await putFile(selectedFile, upload, (progress) => {
         updateItem(id, { progress });
       });
@@ -446,6 +450,29 @@ function normalizeObjectName(value: string) {
     .map((part) => part.trim())
     .filter((part) => part && part !== "." && part !== "..")
     .join("/");
+}
+
+function validateExtensionUnchanged(originalName: string, objectName: string) {
+  const originalExtension = getFileExtension(originalName);
+  const objectExtension = getFileExtension(objectName);
+
+  if (originalExtension === objectExtension) {
+    return undefined;
+  }
+
+  return originalExtension
+    ? `文件后缀必须保持为 ${originalExtension}。`
+    : "原文件没有后缀，上传文件名也不能添加后缀。";
+}
+
+function getFileExtension(value: string) {
+  const fileName = value.replaceAll("\\", "/").split("/").at(-1) ?? "";
+  const extensionStart = fileName.lastIndexOf(".");
+  if (extensionStart <= 0 || extensionStart === fileName.length - 1) {
+    return "";
+  }
+
+  return fileName.slice(extensionStart);
 }
 
 function formatBytes(value: number) {
