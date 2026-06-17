@@ -17,8 +17,13 @@ S3_ACCESS_KEY_ID=your-access-key
 S3_SECRET_ACCESS_KEY=your-secret-key
 S3_FORCE_PATH_STYLE=false
 S3_KEY_PREFIX=uploads/
+ROOT_DIR=/uploads/{{today}}
 SIGNED_URL_TTL_SECONDS=900
 ```
+
+`ROOT_DIR` 设置后会作为上传目录，并覆盖 `S3_KEY_PREFIX`。例如
+`ROOT_DIR=/xxx` 会上传到 `/xxx/<name>.<file>`，`ROOT_DIR=/xxx/{{today}}`
+会上传到 `/xxx/yyyymmdd/<name>.<file>`。
 
 ## 开发
 

@@ -25,7 +25,6 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -42,6 +41,10 @@ interface PresignedUpload {
   objectKey: string;
   url: string;
   headers: Record<string, string>;
+}
+
+interface PublicProfile {
+  uploadPathPrefix: string;
 }
 
 interface UploadItem {
@@ -63,6 +66,7 @@ export default function Home() {
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
   const [configReady, setConfigReady] = useState(false);
+  const [profile, setProfile] = useState<PublicProfile | null>(null);
 
   useEffect(() => {
     void loadConfig();
@@ -70,9 +74,13 @@ export default function Home() {
 
   async function loadConfig() {
     try {
-      await api("/api/uploads/presign");
+      const data = await api<{ profile: PublicProfile }>(
+        "/api/uploads/presign",
+      );
+      setProfile(data.profile);
       setConfigReady(true);
     } catch (error) {
+      setProfile(null);
       setConfigReady(false);
       toast.error(messageOf(error));
     }
@@ -118,7 +126,7 @@ export default function Home() {
     const item: UploadItem = {
       id,
       fileName: selectedFile.name,
-      objectKey: objectName,
+      objectKey: buildDisplayObjectKey(profile?.uploadPathPrefix ?? "", objectName),
       size: selectedFile.size,
       status: "signing",
       progress: 0,
@@ -177,6 +185,7 @@ export default function Home() {
   const selectedExtension = selectedFile
     ? getFileExtension(selectedFile.name)
     : "";
+  const uploadPathPrefix = profile?.uploadPathPrefix ?? "";
 
   return (
     <main className="min-h-svh bg-background">
@@ -266,10 +275,21 @@ export default function Home() {
               <Field>
                 <FieldLabel>File Name</FieldLabel>
                 <div className="flex min-w-0">
+                  {uploadPathPrefix && (
+                    <span
+                      className="flex h-8 max-w-48 shrink-0 items-center rounded-l-lg border border-input bg-muted px-2.5 text-sm text-muted-foreground"
+                      title={uploadPathPrefix}
+                    >
+                      <span className="truncate">{uploadPathPrefix}</span>
+                    </span>
+                  )}
                   <Input
                     value={uploadName}
                     disabled={!selectedFile || busy}
-                    className="rounded-r-none"
+                    className={cn(
+                      "min-w-0 rounded-r-none",
+                      uploadPathPrefix && "rounded-l-none border-l-0",
+                    )}
                     onChange={(event) =>
                       setUploadName(
                         stripLockedExtension(
@@ -453,6 +473,10 @@ function putFile(
 async function copyText(value: string) {
   await navigator.clipboard.writeText(value);
   toast.success("Copied File Name");
+}
+
+function buildDisplayObjectKey(prefix: string, fileName: string) {
+  return `${prefix}${fileName}`;
 }
 
 function normalizeObjectName(value: string) {

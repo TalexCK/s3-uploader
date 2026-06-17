@@ -1,5 +1,7 @@
 import "server-only";
 
+import { normalizeRelativePrefix, resolveRootDirPrefix } from "@/lib/upload-path";
+
 function readEnv(key: string, fallback?: string) {
   const value = process.env[key]?.trim();
   if (value) {
@@ -49,6 +51,9 @@ function isProductionBuild() {
 }
 
 export function getAppConfig() {
+  const keyPrefix = normalizeRelativePrefix(readOptionalEnv("S3_KEY_PREFIX") ?? "");
+  const rootDirPrefix = resolveRootDirPrefix(readOptionalEnv("ROOT_DIR"));
+
   return {
     profileName: readEnv("S3_PROFILE_NAME", "Default"),
     endpoint: readEnv("S3_ENDPOINT"),
@@ -58,19 +63,11 @@ export function getAppConfig() {
     secretAccessKey: readEnv("S3_SECRET_ACCESS_KEY"),
     sessionToken: readOptionalEnv("S3_SESSION_TOKEN"),
     forcePathStyle: readBooleanEnv("S3_FORCE_PATH_STYLE", false),
-    keyPrefix: normalizePrefix(readOptionalEnv("S3_KEY_PREFIX") ?? ""),
+    keyPrefix,
+    uploadPathPrefix: rootDirPrefix || keyPrefix,
     signedUrlTtlSeconds: Math.min(
       Math.max(readNumberEnv("SIGNED_URL_TTL_SECONDS", 900), 1),
       604800,
     ),
   };
-}
-
-function normalizePrefix(value: string) {
-  const cleaned = value.trim().replace(/^\/+/, "");
-  if (!cleaned) {
-    return "";
-  }
-
-  return cleaned.endsWith("/") ? cleaned : `${cleaned}/`;
 }

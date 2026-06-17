@@ -3,6 +3,10 @@ import "server-only";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getAppConfig } from "@/lib/env";
+import {
+  buildDisplayObjectKey,
+  normalizeRelativePrefix,
+} from "@/lib/upload-path";
 
 export interface PresignedUpload {
   objectKey: string;
@@ -41,7 +45,7 @@ export async function signUploadFiles(
 
   return Promise.all(
     files.map(async (file) => {
-      const objectKey = buildObjectKey(config.keyPrefix, requestPrefix, file.name);
+      const objectKey = buildObjectKey(config.uploadPathPrefix, requestPrefix, file.name);
       const contentType = cleanHeaderValue(file.contentType);
       const headers: Record<string, string> = contentType
         ? { "content-type": contentType }
@@ -74,6 +78,7 @@ export function getPublicProfile() {
     bucket: config.bucket,
     forcePathStyle: config.forcePathStyle,
     keyPrefix: config.keyPrefix,
+    uploadPathPrefix: config.uploadPathPrefix,
     signedUrlTtlSeconds: config.signedUrlTtlSeconds,
   };
 }
@@ -84,7 +89,10 @@ function buildObjectKey(basePrefix: string, requestPrefix: string, fileName: str
     throw new Error("文件名不能为空");
   }
 
-  return `${basePrefix}${requestPrefix}${appendRandomSuffix(safeName)}`;
+  return buildDisplayObjectKey(
+    `${basePrefix}${requestPrefix}`,
+    appendRandomSuffix(safeName),
+  );
 }
 
 function appendRandomSuffix(filePath: string) {
@@ -122,12 +130,7 @@ function sanitizePath(value: string) {
 }
 
 function normalizePrefix(value: string) {
-  const cleaned = sanitizePath(value);
-  if (!cleaned) {
-    return "";
-  }
-
-  return cleaned.endsWith("/") ? cleaned : `${cleaned}/`;
+  return normalizeRelativePrefix(value);
 }
 
 function cleanHeaderValue(value?: string | null) {
