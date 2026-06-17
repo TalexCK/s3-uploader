@@ -100,7 +100,7 @@ export default function Home() {
 
   async function uploadFile() {
     if (!selectedFile) {
-      toast.error("请先选择上传文件。");
+      toast.error("Please select a file first.");
       return;
     }
 
@@ -110,7 +110,7 @@ export default function Home() {
       selectedFile.name,
     );
     if (!objectName) {
-      toast.error("请填写上传文件名。");
+      toast.error("Please enter a file name.");
       return;
     }
 
@@ -144,7 +144,7 @@ export default function Home() {
       );
       const upload = data.uploads[0];
       if (!upload) {
-        throw new Error("预签名响应为空");
+        throw new Error("Empty Response");
       }
 
       updateItem(id, { objectKey: upload.objectKey, status: "uploading" });
@@ -155,7 +155,7 @@ export default function Home() {
       updateItem(id, { status: "done", progress: 100 });
       setSelectedFile(null);
       setUploadName("");
-      toast.success("上传完成。");
+      toast.success("Upload completed.");
     } catch (error) {
       updateItem(id, {
         status: "error",
@@ -196,9 +196,9 @@ export default function Home() {
                 }
               >
                 <RefreshCwIcon />
-                <span className="sr-only">刷新配置</span>
+                <span className="sr-only">Refresh</span>
               </TooltipTrigger>
-              <TooltipContent>刷新配置</TooltipContent>
+              <TooltipContent>Refresh</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger
@@ -212,9 +212,9 @@ export default function Home() {
                 }
               >
                 {isDark ? <SunIcon /> : <MoonIcon />}
-                <span className="sr-only">切换主题</span>
+                <span className="sr-only">Theme</span>
               </TooltipTrigger>
-              <TooltipContent>切换主题</TooltipContent>
+              <TooltipContent>Theme</TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -223,15 +223,11 @@ export default function Home() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Card>
           <CardHeader>
-            <CardTitle>上传文件</CardTitle>
-            <CardDescription>
-              选择文件，填写上传文件名，然后浏览器直传到对象存储。
-            </CardDescription>
+            <CardTitle>Upload</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4">
               <Field>
-                <FieldLabel>上传文件</FieldLabel>
                 <input
                   ref={inputRef}
                   type="file"
@@ -256,7 +252,7 @@ export default function Home() {
                   <div className="min-w-0 space-y-2">
                     <UploadCloudIcon className="mx-auto size-5" />
                     <p className="truncate text-sm font-medium">
-                      {selectedFile?.name ?? "点击或拖拽选择文件"}
+                      {selectedFile?.name ?? "Click or drag files here to upload."}
                     </p>
                     {selectedFile && (
                       <p className="text-xs text-muted-foreground">
@@ -268,7 +264,7 @@ export default function Home() {
               </Field>
 
               <Field>
-                <FieldLabel>上传文件名</FieldLabel>
+                <FieldLabel>File Name</FieldLabel>
                 <div className="flex min-w-0">
                   <Input
                     value={uploadName}
@@ -287,7 +283,7 @@ export default function Home() {
                   <span className="flex h-8 max-w-40 shrink-0 items-center rounded-r-lg border border-l-0 border-input bg-muted px-2.5 text-sm text-muted-foreground">
                     <span className="truncate">
                       {selectedFile
-                        ? selectedExtension || "无后缀"
+                        ? selectedExtension || ""
                         : ".png"}
                     </span>
                   </span>
@@ -308,7 +304,7 @@ export default function Home() {
                   ) : (
                     <UploadCloudIcon data-icon="inline-start" />
                   )}
-                  上传
+                  Upload
                 </Button>
               </div>
             </div>
@@ -317,10 +313,7 @@ export default function Home() {
 
         <Card>
           <CardHeader>
-            <CardTitle>任务队列</CardTitle>
-            <CardDescription>
-              {items.length ? `${items.length} 个任务` : "点击上传后显示进度"}
-            </CardDescription>
+            <CardTitle>Queue</CardTitle>
             <CardAction>
               <Button
                 type="button"
@@ -329,7 +322,7 @@ export default function Home() {
                 disabled={busy || !items.length}
                 onClick={() => setItems([])}
               >
-                清空
+                Clear
               </Button>
             </CardAction>
           </CardHeader>
@@ -346,7 +339,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="flex min-h-32 items-center justify-center rounded-lg border bg-muted/20 text-sm text-muted-foreground">
-                暂无任务
+                No tasks available.
               </div>
             )}
           </CardContent>
@@ -404,7 +397,7 @@ function UploadRow({
           onClick={onCopy}
         >
           <CopyIcon />
-          <span className="sr-only">复制对象 Key</span>
+          <span className="sr-only">Copy Object Key</span>
         </Button>
       </div>
     </div>
@@ -421,7 +414,7 @@ async function api<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error ?? "请求失败");
+    throw new Error(data.error ?? "Request Error");
   }
 
   return data;
@@ -449,17 +442,17 @@ function putFile(
       if (request.status >= 200 && request.status < 300) {
         resolve();
       } else {
-        reject(new Error(`S3 返回 ${request.status}`));
+        reject(new Error(`S3 return ${request.status}`));
       }
     };
-    request.onerror = () => reject(new Error("上传请求失败"));
+    request.onerror = () => reject(new Error("Upload Request Failed"));
     request.send(file);
   });
 }
 
 async function copyText(value: string) {
   await navigator.clipboard.writeText(value);
-  toast.success("已复制文件名。");
+  toast.success("Copied File Name");
 }
 
 function normalizeObjectName(value: string) {
@@ -522,13 +515,13 @@ function formatBytes(value: number) {
 
 function statusText(status: UploadItem["status"]) {
   return {
-    signing: "签名中",
-    uploading: "上传中",
-    done: "完成",
-    error: "失败",
+    signing: "Signing",
+    uploading: "Uploading",
+    done: "Done",
+    error: "Error",
   }[status];
 }
 
 function messageOf(error: unknown) {
-  return error instanceof Error ? error.message : "未知错误";
+  return error instanceof Error ? error.message : "Unknown Error";
 }
