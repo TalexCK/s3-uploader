@@ -16,13 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getUploadDataDir, listUploadRecords } from "@/lib/upload-records";
+import { getUploadRecordDir, listUploadRecords } from "@/lib/upload-records";
 
 export const dynamic = "force-dynamic";
 
 export default async function ViewPage() {
   const records = await listUploadRecords();
-  const dataDir = getUploadDataDir();
+  const recordDir = getUploadRecordDir();
 
   return (
     <main className="min-h-svh bg-background">
@@ -88,7 +88,7 @@ export default async function ViewPage() {
         </Card>
 
         <p className="text-xs text-muted-foreground">
-          Data file: <span className="font-mono">{dataDir}/uploads.jsonl</span>
+          Record file: <span className="font-mono">{recordDir}/uploads.jsonl</span>
         </p>
       </div>
     </main>

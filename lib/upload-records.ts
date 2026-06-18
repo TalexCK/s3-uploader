@@ -3,9 +3,9 @@ import "server-only";
 import crypto from "node:crypto";
 import { mkdir, readFile, appendFile } from "node:fs/promises";
 import path from "node:path";
-import { getAppConfig } from "@/lib/env";
 
 const RECORD_FILE_NAME = "uploads.jsonl";
+const RECORD_DIR = "/app/data";
 
 export interface UploadRecord {
   id: string;
@@ -67,17 +67,12 @@ export async function listUploadRecords() {
   }
 }
 
-export function getUploadDataDir() {
-  const dataDir = getAppConfig().dataDir;
-  if (path.isAbsolute(dataDir)) {
-    return dataDir;
-  }
-
-  return path.join(/* turbopackIgnore: true */ process.cwd(), dataDir);
+export function getUploadRecordDir() {
+  return RECORD_DIR;
 }
 
 function getRecordFilePath() {
-  return path.join(getUploadDataDir(), RECORD_FILE_NAME);
+  return path.join(getUploadRecordDir(), RECORD_FILE_NAME);
 }
 
 function parseRecordLine(line: string) {

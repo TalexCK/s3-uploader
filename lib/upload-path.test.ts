@@ -27,4 +27,10 @@ describe("upload path helpers", () => {
   it("builds display object keys with the resolved prefix", () => {
     expect(buildDisplayObjectKey("/xxx/", "demo.png")).toBe("/xxx/demo.png");
   });
+
+  it("expands today token in object data directories", () => {
+    const date = new Date(2026, 5, 17);
+
+    expect(resolveRootDirPrefix("/{{today}}", date)).toBe("/20260617/");
+  });
 });

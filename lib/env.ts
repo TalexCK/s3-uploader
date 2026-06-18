@@ -1,6 +1,9 @@
 import "server-only";
 
-import { normalizeRelativePrefix, resolveRootDirPrefix } from "@/lib/upload-path";
+import {
+  normalizeRelativePrefix,
+  resolveRootDirPrefix,
+} from "@/lib/upload-path";
 
 function readEnv(key: string, fallback?: string) {
   const value = process.env[key]?.trim();
@@ -52,6 +55,7 @@ function isProductionBuild() {
 
 export function getAppConfig() {
   const keyPrefix = normalizeRelativePrefix(readOptionalEnv("S3_KEY_PREFIX") ?? "");
+  const dataDirPrefix = resolveRootDirPrefix(readOptionalEnv("DATA_DIR"));
   const rootDirPrefix = resolveRootDirPrefix(readOptionalEnv("ROOT_DIR"));
 
   return {
@@ -64,11 +68,10 @@ export function getAppConfig() {
     sessionToken: readOptionalEnv("S3_SESSION_TOKEN"),
     forcePathStyle: readBooleanEnv("S3_FORCE_PATH_STYLE", false),
     keyPrefix,
-    uploadPathPrefix: rootDirPrefix || keyPrefix,
+    uploadPathPrefix: dataDirPrefix || rootDirPrefix || keyPrefix,
     signedUrlTtlSeconds: Math.min(
       Math.max(readNumberEnv("SIGNED_URL_TTL_SECONDS", 900), 1),
       604800,
     ),
-    dataDir: readEnv("DATA_DIR", "data"),
   };
 }
