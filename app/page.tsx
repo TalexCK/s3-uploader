@@ -362,7 +362,7 @@ export default function Home() {
                     value={relativeInfo}
                     disabled={busy}
                     onChange={(event) => setRelativeInfo(event.target.value)}
-                    placeholder="Project, ticket, remark..."
+                    placeholder="Location, Direction or other information..."
                     className="min-h-28"
                   />
                 </Field>
