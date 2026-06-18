@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   type ChangeEvent,
   type DragEvent,
@@ -11,6 +12,7 @@ import { toast } from "sonner";
 import {
   CheckCircle2Icon,
   CopyIcon,
+  ListIcon,
   Loader2Icon,
   MoonIcon,
   RefreshCwIcon,
@@ -52,7 +54,7 @@ interface UploadItem {
   fileName: string;
   objectKey: string;
   size: number;
-  status: "signing" | "uploading" | "done" | "error";
+  status: "signing" | "uploading" | "recording" | "done" | "error";
   progress: number;
   error?: string;
 }
@@ -160,10 +162,21 @@ export default function Home() {
         updateItem(id, { progress });
       });
 
+      updateItem(id, { status: "recording", progress: 100 });
+      await api("/api/uploads/complete", {
+        method: "POST",
+        body: JSON.stringify({
+          objectKey: upload.objectKey,
+          fileName: selectedFile.name,
+          size: selectedFile.size,
+          contentType: selectedFile.type || null,
+        }),
+      });
+
       updateItem(id, { status: "done", progress: 100 });
       setSelectedFile(null);
       setUploadName("");
-      toast.success("Upload completed.");
+      toast.success("Upload completed and recorded.");
     } catch (error) {
       updateItem(id, {
         status: "error",
@@ -193,6 +206,10 @@ export default function Home() {
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <h1 className="text-xl font-semibold">Uploader</h1>
           <div className="flex items-center gap-2">
+            <Button render={<Link href="/view" />} variant="outline">
+              <ListIcon data-icon="inline-start" />
+              View
+            </Button>
             <Tooltip>
               <TooltipTrigger
                 render={
@@ -379,6 +396,7 @@ function UploadRow({
   const statusIcon = {
     signing: <Loader2Icon className="size-4 animate-spin" />,
     uploading: <Loader2Icon className="size-4 animate-spin" />,
+    recording: <Loader2Icon className="size-4 animate-spin" />,
     done: <CheckCircle2Icon className="size-4 text-emerald-600" />,
     error: <XCircleIcon className="size-4 text-destructive" />,
   }[item.status];
@@ -541,6 +559,7 @@ function statusText(status: UploadItem["status"]) {
   return {
     signing: "Signing",
     uploading: "Uploading",
+    recording: "Recording",
     done: "Done",
     error: "Error",
   }[status];

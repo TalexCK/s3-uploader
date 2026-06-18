@@ -69,5 +69,6 @@ export function getAppConfig() {
       Math.max(readNumberEnv("SIGNED_URL_TTL_SECONDS", 900), 1),
       604800,
     ),
+    dataDir: readEnv("DATA_DIR", "data"),
   };
 }
