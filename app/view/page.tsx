@@ -50,6 +50,8 @@ export default async function ViewPage() {
                   <TableRow>
                     <TableHead>Object Key</TableHead>
                     <TableHead>File Name</TableHead>
+                    <TableHead>Upload By</TableHead>
+                    <TableHead>Relative Info</TableHead>
                     <TableHead>Size</TableHead>
                     <TableHead>Content Type</TableHead>
                     <TableHead>Uploaded At</TableHead>
@@ -63,6 +65,12 @@ export default async function ViewPage() {
                       </TableCell>
                       <TableCell className="max-w-[280px] truncate">
                         {record.fileName}
+                      </TableCell>
+                      <TableCell className="max-w-[180px] truncate">
+                        {record.uploadBy || "-"}
+                      </TableCell>
+                      <TableCell className="max-w-[420px] whitespace-normal break-words">
+                        {record.relativeInfo || "-"}
                       </TableCell>
                       <TableCell>{formatBytes(record.size)}</TableCell>
                       <TableCell>{record.contentType || "-"}</TableCell>

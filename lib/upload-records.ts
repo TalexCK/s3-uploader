@@ -11,6 +11,8 @@ export interface UploadRecord {
   id: string;
   objectKey: string;
   fileName: string;
+  uploadBy: string;
+  relativeInfo: string;
   size: number;
   contentType: string | null;
   uploadedAt: string;
@@ -19,6 +21,8 @@ export interface UploadRecord {
 export interface UploadRecordInput {
   objectKey: string;
   fileName: string;
+  uploadBy: string;
+  relativeInfo: string;
   size: number;
   contentType?: string | null;
 }
@@ -28,6 +32,8 @@ export async function recordUpload(input: UploadRecordInput) {
     id: crypto.randomUUID(),
     objectKey: input.objectKey,
     fileName: input.fileName,
+    uploadBy: input.uploadBy,
+    relativeInfo: input.relativeInfo,
     size: input.size,
     contentType: input.contentType || null,
     uploadedAt: new Date().toISOString(),
@@ -91,6 +97,8 @@ function parseRecordLine(line: string) {
       id: value.id,
       objectKey: value.objectKey,
       fileName: value.fileName,
+      uploadBy: value.uploadBy || "",
+      relativeInfo: value.relativeInfo || "",
       size: value.size,
       contentType: value.contentType || null,
       uploadedAt: value.uploadedAt,

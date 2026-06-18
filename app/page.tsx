@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
@@ -64,6 +65,8 @@ export default function Home() {
   const { resolvedTheme, setTheme } = useTheme();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadName, setUploadName] = useState("");
+  const [uploadBy, setUploadBy] = useState("");
+  const [relativeInfo, setRelativeInfo] = useState("");
   const [items, setItems] = useState<UploadItem[]>([]);
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -111,6 +114,18 @@ export default function Home() {
   async function uploadFile() {
     if (!selectedFile) {
       toast.error("Please select a file first.");
+      return;
+    }
+
+    const trimmedUploadBy = uploadBy.trim();
+    if (!trimmedUploadBy) {
+      toast.error("Please enter Upload By.");
+      return;
+    }
+
+    const trimmedRelativeInfo = relativeInfo.trim();
+    if (!trimmedRelativeInfo) {
+      toast.error("Please enter Relative Info.");
       return;
     }
 
@@ -168,6 +183,8 @@ export default function Home() {
         body: JSON.stringify({
           objectKey: upload.objectKey,
           fileName: selectedFile.name,
+          uploadBy: trimmedUploadBy,
+          relativeInfo: trimmedRelativeInfo,
           size: selectedFile.size,
           contentType: selectedFile.type || null,
         }),
@@ -176,6 +193,7 @@ export default function Home() {
       updateItem(id, { status: "done", progress: 100 });
       setSelectedFile(null);
       setUploadName("");
+      setRelativeInfo("");
       toast.success("Upload completed and recorded.");
     } catch (error) {
       updateItem(id, {
@@ -290,7 +308,7 @@ export default function Home() {
               </Field>
 
               <Field>
-                <FieldLabel>File Name</FieldLabel>
+                <FieldLabel>Object Name</FieldLabel>
                 <div className="flex min-w-0">
                   {uploadPathPrefix && (
                     <span
@@ -327,10 +345,39 @@ export default function Home() {
                 </div>
               </Field>
 
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel>Upload By</FieldLabel>
+                  <Input
+                    value={uploadBy}
+                    disabled={busy}
+                    onChange={(event) => setUploadBy(event.target.value)}
+                    placeholder="Uploader name"
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel>Relative Info</FieldLabel>
+                  <Textarea
+                    value={relativeInfo}
+                    disabled={busy}
+                    onChange={(event) => setRelativeInfo(event.target.value)}
+                    placeholder="Project, ticket, remark..."
+                    className="min-h-28"
+                  />
+                </Field>
+              </div>
+
               <div className="flex justify-end">
                 <Button
                   type="button"
-                  disabled={!selectedFile || busy || !configReady}
+                  disabled={
+                    !selectedFile ||
+                    busy ||
+                    !configReady ||
+                    !uploadBy.trim() ||
+                    !relativeInfo.trim()
+                  }
                   onClick={() => void uploadFile()}
                 >
                   {busy ? (

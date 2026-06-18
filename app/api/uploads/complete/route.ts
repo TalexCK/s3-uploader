@@ -5,6 +5,8 @@ import { recordUpload } from "@/lib/upload-records";
 const requestSchema = z.object({
   objectKey: z.string().min(1).max(2048),
   fileName: z.string().min(1).max(1024),
+  uploadBy: z.string().min(1).max(255),
+  relativeInfo: z.string().min(1).max(4096),
   size: z.number().int().nonnegative(),
   contentType: z.string().max(255).nullable().optional(),
 });

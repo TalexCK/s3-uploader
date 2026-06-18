@@ -32,7 +32,9 @@ DATA_DIR=/app/data
 `DATA_DIR/uploads.jsonl`。记录内容包括：
 
 - `objectKey`：S3 返回的真实 object key。
-- `fileName`：用户选择的原始文件名。
+- `fileName`：自动记录用户选择的原始文件名。
+- `uploadBy`：上传前必填的上传者。
+- `relativeInfo`：上传前必填的相关信息。
 - `size`：文件大小。
 - `contentType`：浏览器提供的 MIME 类型。
 - `uploadedAt`：上传完成时间。
