@@ -54,7 +54,7 @@ export default async function ViewPage() {
                     <TableHead>Relative Info</TableHead>
                     <TableHead>Size</TableHead>
                     <TableHead>Content Type</TableHead>
-                    <TableHead>Uploaded At</TableHead>
+                    <TableHead>Uploaded At (UTC+8)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -107,6 +107,7 @@ function formatBytes(value: number) {
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
